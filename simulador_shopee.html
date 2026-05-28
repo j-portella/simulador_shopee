@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Shopee — Juliano Portella</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /**
+   * @author Juliano Borges Portella
+   * @copyright 2025 Juliano Borges Portella. Todos os direitos reservados.
+   * @description Simulador de Precificação Shopee
+   */
+
+  :root {
+    --bg: #0d0d0d;
+    --bg2: #151515;
+    --bg3: #1c1c1c;
+    --orange: #ff6b2b;
+    --orange-dim: rgba(255,107,43,0.1);
+    --orange-glow: rgba(255,107,43,0.25);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.1);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.1);
+    --yellow: #f59e0b;
+    --text: #f5f5f5;
+    --text2: #999;
+    --text3: #555;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 600px 400px at 20% 0%, rgba(255,107,43,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 80% 100%, rgba(255,107,43,0.04) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* HEADER */
+  header { text-align: center; margin-bottom: 2.5rem; }
+
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--orange-dim);
+    border: 1px solid rgba(255,107,43,0.2);
+    color: var(--orange);
+    font-size: 0.7rem; font-weight: 600;
+    padding: 0.3rem 0.9rem; border-radius: 100px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  header h1 {
+    font-size: 1.9rem; font-weight: 700;
+    letter-spacing: -0.5px; margin-bottom: 0.4rem;
+  }
+
+  header h1 span { color: var(--orange); }
+
+  header p { color: var(--text2); font-size: 0.88rem; }
+
+  /* TABS */
+  .tabs {
+    display: flex; gap: 4px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+    margin-bottom: 1.5rem;
+  }
+
+  .tab {
+    flex: 1; padding: 0.6rem;
+    border: none; background: transparent;
+    color: var(--text2); font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem; font-weight: 500;
+    border-radius: 8px; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .tab.active {
+    background: var(--orange);
+    color: #0d0d0d; font-weight: 700;
+  }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* CARD */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--orange); margin-bottom: 1.2rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* FORM */
+  .field { margin-bottom: 1.2rem; }
+
+  label {
+    display: block; font-size: 0.8rem;
+    color: var(--text2); margin-bottom: 0.4rem; font-weight: 500;
+  }
+
+  .input-wrap { position: relative; }
+
+  .input-prefix {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: var(--text3);
+  }
+
+  input[type="number"], input[type="text"] {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 0.7rem 0.9rem 0.7rem 2.2rem;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  input[type="number"]:focus, input[type="text"]:focus {
+    border-color: var(--orange);
+  }
+
+  input.no-prefix { padding-left: 0.9rem; }
+
+  /* GRID 2 cols */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  /* FAIXA BADGE */
+  .faixa-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; font-weight: 600;
+    padding: 0.3rem 0.8rem; border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 1.2rem;
+    background: var(--orange-dim);
+    border: 1px solid rgba(255,107,43,0.2);
+    color: var(--orange);
+  }
+
+  /* RESULT BOX */
+  .result-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1px; background: var(--border);
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .result-item {
+    background: var(--bg3);
+    padding: 1rem 1.2rem;
+  }
+
+  .result-label {
+    font-size: 0.72rem; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 0.3rem; font-family: 'JetBrains Mono', monospace;
+  }
+
+  .result-val {
+    font-size: 1.3rem; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .result-val.positive { color: var(--green); }
+  .result-val.negative { color: var(--red); }
+  .result-val.neutral { color: var(--text); }
+  .result-val.orange { color: var(--orange); }
+
+  /* LUCRO GRANDE */
+  .lucro-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-top: 1rem;
+    position: relative; overflow: hidden;
+  }
+
+  .lucro-box::before {
+    content: '';
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 200px; height: 1px;
+    transition: background 0.3s;
+  }
+
+  .lucro-box.pos::before { background: linear-gradient(90deg, transparent, var(--green), transparent); }
+  .lucro-box.neg::before { background: linear-gradient(90deg, transparent, var(--red), transparent); }
+
+  .lucro-label { font-size: 0.72rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; margin-bottom: 0.4rem; }
+  .lucro-val { font-size: 2.4rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .lucro-margem { font-size: 0.82rem; color: var(--text2); margin-top: 0.3rem; }
+
+  /* ALERTA */
+  .alerta {
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 8px; padding: 0.8rem 1rem;
+    font-size: 0.8rem; color: var(--yellow);
+    margin-top: 1rem; line-height: 1.5;
+    display: none;
+  }
+  .alerta.show { display: block; }
+
+  /* CENARIOS */
+  .cenarios-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+  .cenarios-table th {
+    font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+    padding: 0.5rem 0.8rem; text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  .cenarios-table th:first-child { text-align: left; }
+  .cenarios-table td {
+    padding: 0.55rem 0.8rem;
+    font-size: 0.82rem; font-family: 'JetBrains Mono', monospace;
+    text-align: right; border-bottom: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .cenarios-table td:first-child { text-align: left; color: var(--text); font-weight: 500; }
+  .cenarios-table tr.highlight td { background: rgba(34,197,94,0.06); color: var(--green); }
+  .cenarios-table tr.highlight td:first-child { color: var(--green); }
+  .cenarios-table tr:last-child td { border-bottom: none; }
+
+  /* LOTE */
+  .lote-row {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 36px;
+    gap: 8px; align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .lote-header {
+    font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .lote-result {
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+  }
+
+  .btn-add {
+    width: 100%; padding: 0.7rem;
+    background: var(--orange-dim);
+    border: 1px dashed rgba(255,107,43,0.3);
+    border-radius: 8px; color: var(--orange);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; margin-top: 1rem;
+    transition: background 0.2s;
+  }
+  .btn-add:hover { background: rgba(255,107,43,0.15); }
+
+  .btn-del {
+    width: 32px; height: 32px;
+    background: var(--red-dim); border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 6px; color: var(--red);
+    font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s; flex-shrink: 0;
+  }
+  .btn-del:hover { background: rgba(239,68,68,0.2); }
+
+  .lote-total {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.2rem;
+    margin-top: 1rem;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 1rem;
+  }
+
+  .lote-total-item { text-align: center; }
+  .lote-total-label { font-size: 0.68rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; font-family: 'JetBrains Mono', monospace; margin-bottom: 0.2rem; }
+  .lote-total-val { font-size: 1.1rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+  /* FOOTER */
+  footer {
+    text-align: center; margin-top: 2rem;
+    font-size: 0.72rem; color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  footer span { color: var(--orange); }
+
+  @media (max-width: 600px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .result-grid { grid-template-columns: 1fr 1fr; }
+    .lote-row { grid-template-columns: 1fr 1fr 1fr 28px; }
+    .lote-row .lote-taxa, .lote-row .lote-header-taxa { display: none; }
+    header h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="header-badge">🛒 Shopee · Taxas mai/2026</div>
+    <h1>Simulador de <span>Precificação</span></h1>
+    <p>Calcule lucro, margem e taxas Shopee automaticamente</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('item')">📦 Item Único</button>
+    <button class="tab" onclick="switchTab('lote')">📋 Lote de Itens</button>
+    <button class="tab" onclick="switchTab('cenarios')">📊 Cenários</button>
+  </div>
+
+  <!-- ITEM ÚNICO -->
+  <div class="panel active" id="panel-item">
+    <div class="card">
+      <div class="card-title">// dados do produto</div>
+      <div class="grid2">
+        <div class="field">
+          <label>Nome do produto (opcional)</label>
+          <input type="text" id="nome" class="no-prefix" placeholder="Meu produto" oninput="calcItem()">
+        </div>
+        <div class="field">
+          <label>Custo unitário do item (R$)</label>
+          <div class="input-wrap">
+            <span class="input-prefix">R$</span>
+            <input type="number" id="custo" placeholder="0,00" step="0.01" min="0" oninput="calcItem()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Embalagem (R$)</label>
+          <div class="input-wrap">
+            <span class="input-prefix">R$</span>
+            <input type="number" id="embalagem" value="1.74" step="0.01" min="0" oninput="calcItem()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Transporte rateado (R$)</label>
+          <div class="input-wrap">
+            <span class="input-prefix">R$</span>
+            <input type="number" id="transporte" value="0.89" step="0.01" min="0" oninput="calcItem()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Preço de venda (R$)</label>
+          <div class="input-wrap">
+            <span class="input-prefix">R$</span>
+            <input type="number" id="preco" placeholder="0,00" step="0.01" min="0" oninput="calcItem()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="resultado-card">
+      <div class="card-title">// resultado</div>
+      <div id="faixa-badge" class="faixa-badge">— Faixa Shopee</div>
+      <div class="result-grid">
+        <div class="result-item">
+          <div class="result-label">Custo Total</div>
+          <div class="result-val neutral" id="r-custo-total">R$ —</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">Taxa Shopee</div>
+          <div class="result-val orange" id="r-taxa">R$ —</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">Comissão %</div>
+          <div class="result-val neutral" id="r-comissao">—%</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">Taxa Fixa</div>
+          <div class="result-val neutral" id="r-taxa-fixa">R$ —</div>
+        </div>
+      </div>
+      <div class="lucro-box" id="lucro-box">
+        <div class="lucro-label">Lucro por item</div>
+        <div class="lucro-val" id="r-lucro">—</div>
+        <div class="lucro-margem" id="r-margem">Margem líquida: —</div>
+      </div>
+      <div class="alerta" id="alerta-faixa">
+        ⚠️ Preços entre R$80 e R$85 pagam taxa fixa de R$16 (Faixa 2), mas têm lucro similar à Faixa 1. Prefira R$79,99 ou R$99,90+.
+      </div>
+    </div>
+  </div>
+
+  <!-- LOTE -->
+  <div class="panel" id="panel-lote">
+    <div class="card">
+      <div class="card-title">// simulação em lote</div>
+
+      <div class="lote-row lote-header">
+        <div>Nome</div>
+        <div style="text-align:center">Custo (R$)</div>
+        <div style="text-align:center">Preço (R$)</div>
+        <div class="lote-taxa" style="text-align:center">Taxa (R$)</div>
+        <div style="text-align:center">Lucro (R$)</div>
+        <div></div>
+      </div>
+
+      <div id="lote-rows"></div>
+      <button class="btn-add" onclick="addLoteRow()">+ Adicionar item</button>
+
+      <div class="lote-total" id="lote-total">
+        <div class="lote-total-item">
+          <div class="lote-total-label">Itens</div>
+          <div class="lote-total-val" id="lt-itens">0</div>
+        </div>
+        <div class="lote-total-item">
+          <div class="lote-total-label">Receita Total</div>
+          <div class="lote-total-val" id="lt-receita">R$ 0,00</div>
+        </div>
+        <div class="lote-total-item">
+          <div class="lote-total-label">Lucro Total</div>
+          <div class="lote-total-val" id="lt-lucro" style="color:var(--green)">R$ 0,00</div>
+        </div>
+        <div class="lote-total-item">
+          <div class="lote-total-label">Margem Média</div>
+          <div class="lote-total-val" id="lt-margem">0%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENÁRIOS -->
+  <div class="panel" id="panel-cenarios">
+    <div class="card">
+      <div class="card-title">// configurar base</div>
+      <div class="grid2">
+        <div class="field">
+          <label>Custo unitário (R$)</label>
+          <div class="input-wrap">
+            <span class="input-prefix">R$</span>
+            <input type="number" id="c-custo" placeholder="0,00" step="0.01" min="0" oninput="calcCenarios()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Embalagem + Transporte (R$)</label>
+          <div class="input-wrap">
+            <span class="input-prefix">R$</span>
+            <input type="number" id="c-fixo" value="2.63" step="0.01" min="0" oninput="calcCenarios()">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">// tabela de cenários</div>
+      <table class="cenarios-table">
+        <thead>
+          <tr>
+            <th>Preço</th>
+            <th>Faixa</th>
+            <th>Taxa Shopee</th>
+            <th>Lucro/item</th>
+            <th>Margem</th>
+          </tr>
+        </thead>
+        <tbody id="cenarios-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>© 2025 <span>Juliano Borges Portella</span> · Todos os direitos reservados · Taxas Shopee mai/2026</footer>
+</div>
+
+<script>
+// =====================
+// TAXAS SHOPEE (mai/2026)
+// =====================
+function calcTaxaShopee(preco) {
+  if (preco <= 79.99)  return { comissao: 0.20, fixa: 4,  faixa: 'Faixa 1 (até R$79,99)' };
+  if (preco <= 99.99)  return { comissao: 0.14, fixa: 16, faixa: 'Faixa 2 (R$80–R$99,99)' };
+  if (preco <= 199.99) return { comissao: 0.14, fixa: 20, faixa: 'Faixa 3 (R$100–R$199,99)' };
+  return { comissao: 0.14, fixa: 26, faixa: 'Faixa 4 (acima R$200)' };
+}
+
+function calcLucro(preco, custo, emb, transp) {
+  const t = calcTaxaShopee(preco);
+  const taxa = preco * t.comissao + t.fixa;
+  const custoTotal = custo + emb + transp;
+  const lucro = preco - custoTotal - taxa;
+  const margem = preco > 0 ? lucro / preco : 0;
+  return { taxa, custoTotal, lucro, margem, ...t };
+}
+
+function fmt(v) { return 'R$ ' + v.toFixed(2).replace('.', ','); }
+function fmtPct(v) { return (v * 100).toFixed(1) + '%'; }
+
+// =====================
+// ITEM ÚNICO
+// =====================
+function calcItem() {
+  const preco = parseFloat(document.getElementById('preco').value) || 0;
+  const custo = parseFloat(document.getElementById('custo').value) || 0;
+  const emb = parseFloat(document.getElementById('embalagem').value) || 0;
+  const transp = parseFloat(document.getElementById('transporte').value) || 0;
+
+  if (!preco && !custo) return;
+
+  const r = calcLucro(preco, custo, emb, transp);
+
+  document.getElementById('faixa-badge').textContent = '📊 ' + r.faixa;
+  document.getElementById('r-custo-total').textContent = fmt(r.custoTotal);
+  document.getElementById('r-taxa').textContent = fmt(r.taxa);
+  document.getElementById('r-comissao').textContent = (r.comissao * 100) + '%';
+  document.getElementById('r-taxa-fixa').textContent = fmt(r.fixa);
+
+  const lucroEl = document.getElementById('r-lucro');
+  const margemEl = document.getElementById('r-margem');
+  const boxEl = document.getElementById('lucro-box');
+
+  lucroEl.textContent = fmt(r.lucro);
+  margemEl.textContent = 'Margem líquida: ' + fmtPct(r.margem);
+
+  if (r.lucro > 0) {
+    lucroEl.className = 'lucro-val';
+    lucroEl.style.color = 'var(--green)';
+    boxEl.className = 'lucro-box pos';
+  } else {
+    lucroEl.className = 'lucro-val';
+    lucroEl.style.color = 'var(--red)';
+    boxEl.className = 'lucro-box neg';
+  }
+
+  const alerta = document.getElementById('alerta-faixa');
+  alerta.className = (preco >= 80 && preco <= 85) ? 'alerta show' : 'alerta';
+}
+
+// =====================
+// LOTE
+// =====================
+let loteId = 0;
+
+function addLoteRow() {
+  const id = loteId++;
+  const container = document.getElementById('lote-rows');
+  const row = document.createElement('div');
+  row.className = 'lote-row';
+  row.id = 'lote-row-' + id;
+  row.innerHTML = `
+    <input type="text" class="no-prefix" placeholder="Nome do item" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:0.45rem 0.7rem;color:var(--text);font-family:'Outfit',sans-serif;font-size:0.82rem;outline:none;width:100%;" oninput="calcLote()">
+    <input type="number" placeholder="Custo" step="0.01" min="0" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:0.45rem 0.7rem;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.82rem;outline:none;width:100%;text-align:center;-moz-appearance:textfield;" oninput="calcLote()">
+    <input type="number" placeholder="Preço" step="0.01" min="0" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:0.45rem 0.7rem;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.82rem;outline:none;width:100%;text-align:center;-moz-appearance:textfield;" oninput="calcLote()">
+    <div class="lote-result lote-taxa" id="lt-taxa-${id}" style="color:var(--orange)">—</div>
+    <div class="lote-result" id="lt-lucro-${id}">—</div>
+    <button class="btn-del" onclick="delLoteRow(${id})">×</button>
+  `;
+  container.appendChild(row);
+  calcLote();
+}
+
+function delLoteRow(id) {
+  const row = document.getElementById('lote-row-' + id);
+  if (row) row.remove();
+  calcLote();
+}
+
+function calcLote() {
+  const rows = document.querySelectorAll('#lote-rows .lote-row');
+  let totalReceita = 0, totalLucro = 0, count = 0;
+
+  rows.forEach((row, i) => {
+    const inputs = row.querySelectorAll('input[type="number"]');
+    const custo = parseFloat(inputs[0].value) || 0;
+    const preco = parseFloat(inputs[1].value) || 0;
+
+    const taxaEl = row.querySelector('[id^="lt-taxa-"]');
+    const lucroEl = row.querySelector('[id^="lt-lucro-"]');
+
+    if (preco > 0) {
+      const r = calcLucro(preco, custo, 1.74, 2.49);
+      if (taxaEl) taxaEl.textContent = fmt(r.taxa);
+      if (lucroEl) {
+        lucroEl.textContent = fmt(r.lucro);
+        lucroEl.style.color = r.lucro >= 0 ? 'var(--green)' : 'var(--red)';
+      }
+      totalReceita += preco;
+      totalLucro += r.lucro;
+      count++;
+    } else {
+      if (taxaEl) taxaEl.textContent = '—';
+      if (lucroEl) { lucroEl.textContent = '—'; lucroEl.style.color = 'var(--text2)'; }
+    }
+  });
+
+  document.getElementById('lt-itens').textContent = count;
+  document.getElementById('lt-receita').textContent = fmt(totalReceita);
+  const lucroEl = document.getElementById('lt-lucro');
+  lucroEl.textContent = fmt(totalLucro);
+  lucroEl.style.color = totalLucro >= 0 ? 'var(--green)' : 'var(--red)';
+  const margem = totalReceita > 0 ? totalLucro / totalReceita : 0;
+  document.getElementById('lt-margem').textContent = fmtPct(margem);
+}
+
+// =====================
+// CENÁRIOS
+// =====================
+const precosCenario = [19.9, 24.9, 29.9, 34.9, 39.9, 44.9, 49.9, 59.9, 69.9, 74.9, 79.9, 89.9, 99.9, 119.9, 149.9, 199.9];
+
+function calcCenarios() {
+  const custo = parseFloat(document.getElementById('c-custo').value) || 0;
+  const fixo = parseFloat(document.getElementById('c-fixo').value) || 0;
+  const tbody = document.getElementById('cenarios-body');
+  tbody.innerHTML = '';
+
+  let melhorLucro = -Infinity, melhorIdx = -1;
+  const results = precosCenario.map(p => {
+    const t = calcTaxaShopee(p);
+    const taxa = p * t.comissao + t.fixa;
+    const lucro = p - custo - fixo - taxa;
+    const margem = p > 0 ? lucro / p : 0;
+    return { p, t, taxa, lucro, margem };
+  });
+
+  results.forEach((r, i) => { if (r.lucro > melhorLucro) { melhorLucro = r.lucro; melhorIdx = i; } });
+
+  results.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    if (i === melhorIdx && r.lucro > 0) tr.className = 'highlight';
+    tr.innerHTML = `
+      <td>${fmt(r.p)}${i === melhorIdx && r.lucro > 0 ? ' ⭐' : ''}</td>
+      <td style="font-size:0.72rem">${r.t.faixa.split('(')[0].trim()}</td>
+      <td>${fmt(r.taxa)}</td>
+      <td style="color:${r.lucro >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt(r.lucro)}</td>
+      <td style="color:${r.margem >= 0.3 ? 'var(--green)' : r.margem >= 0.15 ? 'var(--yellow)' : 'var(--red)'}">${fmtPct(r.margem)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// =====================
+// TABS
+// =====================
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['item','lote','cenarios'][i] === tab);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+// Init
+addLoteRow();
+addLoteRow();
+addLoteRow();
+calcCenarios();
+</script>
+</body>
+</html>
